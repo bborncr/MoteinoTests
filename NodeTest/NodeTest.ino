@@ -1,8 +1,4 @@
-// Sample RFM69 sender/node sketch, with ACK and optional encryption
-// Sends periodic messages of increasing length to gateway (id=1)
-// It also looks for an onboard FLASH chip, if present
-// Library and code by Felix Rusu - felix@lowpowerlab.com
-// Get the RFM69 and SPIFlash library at: https://github.com/LowPowerLab/
+// Simplified Moteino Node Test
 
 #include <RFM69.h>    //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <SPI.h>

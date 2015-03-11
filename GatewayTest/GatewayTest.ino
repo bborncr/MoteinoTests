@@ -1,9 +1,4 @@
-// Sample RFM69 receiver/gateway sketch, with ACK and optional encryption
-// Passes through any wireless received messages to the serial port & responds to ACKs
-// It also looks for an onboard FLASH chip, if present
-// Library and code by Felix Rusu - felix@lowpowerlab.com
-// Get the RFM69 and SPIFlash library at: https://github.com/LowPowerLab/
-
+// Simplified Moteino Gateway test
 #include <RFM69.h>    //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <SPI.h>
 
