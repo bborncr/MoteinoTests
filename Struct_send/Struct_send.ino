@@ -7,7 +7,7 @@
 #define FREQUENCY   RF69_915MHZ //Match this with the version of your Moteino! (others: RF69_433MHZ, RF69_868MHZ)
 #define KEY         "thisIsEncryptKey" //has to be same 16 characters/bytes on all nodes, not more not less!
 #define LED         9
-#define SERIAL_BAUD 115200
+#define SERIAL_BAUD 9600
 #define ACK_TIME    30  // # of ms to wait for an ack
 
 int TRANSMITPERIOD = 1000; //transmit a packet to gateway so often (in ms)
