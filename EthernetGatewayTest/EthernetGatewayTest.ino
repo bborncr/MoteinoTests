@@ -3,7 +3,10 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <utility/w5100.h> //KiwiSinceBirth mods
-#include "apikey.h"
+#include "apikey.h" 
+//use tabs to add apikey.h file or uncomment this line
+//#define APIKEY "xxxxxxxxxxxxxxxxx" //emoncms Account--> "Write API Key"
+
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0 };
 IPAddress server (192,168,10,176);//My Laptop
