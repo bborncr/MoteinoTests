@@ -1,6 +1,13 @@
 // Simplified Moteino Gateway test
-#include <RFM69.h>    //get it here: https://www.github.com/lowpowerlab/rfm69
+#include <RFM69.h>    //KiwiSinceBirth mods
 #include <SPI.h>
+#include <Ethernet.h>
+#include <utility/w5100.h> //KiwiSinceBirth mods
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0 };
+IPAddress server (192,168,10,176);//My Laptop
+IPAddress ip(192,168,10,178);
+EthernetClient client;
 
 #define NODEID        1    //unique for each node on same network
 #define NETWORKID     100  //the same on all nodes that talk to each other
@@ -24,6 +31,7 @@
 RFM69 radio;
 
 void setup() {
+  W5100.select(7);
   Serial.begin(SERIAL_BAUD);
   delay(10);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
@@ -34,6 +42,16 @@ void setup() {
   char buff[50];
   sprintf(buff, "\nListening at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
   Serial.println(buff);
+  
+  // start the Ethernet connection:
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // no point in carrying on, so do nothing forevermore:
+    // try to congifure using IP address instead of DHCP:
+    Ethernet.begin(mac, ip);
+  }
+  // give the Ethernet shield a second to initialize:
+  delay(1000);
 }
 
 byte ackCount=0;
@@ -42,13 +60,20 @@ void loop() {
 
   if (radio.receiveDone())
   {
-    Serial.print("#[");
-    Serial.print(++packetCount);
-    Serial.print(']');
-    Serial.print('[');Serial.print(radio.SENDERID, DEC);Serial.print("] ");
+    client.stop();
+      if (client.connect(server, 8000)) {
+
+    
+    client.print("#[");
+    client.print(++packetCount);
+    client.print(']');
+    client.print('[');client.print(radio.SENDERID, DEC);client.print("] ");
     for (byte i = 0; i < radio.DATALEN; i++)
-      Serial.print((char)radio.DATA[i]);
-    Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
+      client.print((char)radio.DATA[i]);
+    client.print("   [RX_RSSI:");client.print(radio.RSSI);client.print("]");client.println();
+      } else {
+        Serial.println("Connection Failed");
+      }
     
     if (radio.ACKRequested())
     {

@@ -13,7 +13,7 @@
 //#define FREQUENCY   RF69_868MHZ
 #define FREQUENCY     RF69_915MHZ
 #define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
-#define IS_RFM69HW    //uncomment only for RFM69HW! Leave out if you have RFM69W!
+//#define IS_RFM69HW    //uncomment only for RFM69HW! Leave out if you have RFM69W!
 #define ACK_TIME      30 // max # of ms to wait for an ack
 #ifdef __AVR_ATmega1284P__
   #define LED           15 // Moteino MEGAs have LEDs on D15
@@ -58,18 +58,16 @@ void loop() {
     {
       radio.sendACK();
       Serial.print(" - ACK sent");
+    //  radio.sleep();
     }
     Blink(LED,3);
     Serial.println();
   }
 
-  int currPeriod = millis()/TRANSMITPERIOD;
-  if (currPeriod != lastPeriod)
-  {
-    lastPeriod=currPeriod;
     
       int sensorReading = analogRead(A0);
       byte payloadLen = sprintf(payload, "Sensor A0: %u", sensorReading);
+      
       if (radio.sendWithRetry(GATEWAYID, payload, payloadLen))
       {
         Serial.print(" ok!");
@@ -78,7 +76,10 @@ void loop() {
         Serial.print(" nothing...");
       }
     Blink(LED,3);
-  }
+  
+  Serial.flush();
+  radio.sleep();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
 }
 
 void Blink(byte PIN, int DELAY_MS)
