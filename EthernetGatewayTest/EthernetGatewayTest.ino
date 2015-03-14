@@ -3,6 +3,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <utility/w5100.h> //KiwiSinceBirth mods
+#include "apikey.h"
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0 };
 IPAddress server (192,168,10,176);//My Laptop
@@ -34,6 +35,7 @@ void setup() {
   W5100.select(7);
   Serial.begin(SERIAL_BAUD);
   delay(10);
+  Serial.println(APIKEY);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
 #ifdef IS_RFM69HW
   radio.setHighPower(); //only for RFM69HW!
