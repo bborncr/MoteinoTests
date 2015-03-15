@@ -1,8 +1,8 @@
 // Simplified Moteino Gateway test
-#include <RFM69.h>    //KiwiSinceBirth mods
+#include <RFM69.h>    //with KiwiSinceBirth mods
 #include <SPI.h>
 #include <Ethernet.h>
-#include <utility/w5100.h> //KiwiSinceBirth mods
+#include <utility/w5100.h> //with KiwiSinceBirth mods
 #include "apikey.h" 
 //use tabs to add apikey.h file or uncomment this line
 //#define APIKEY "xxxxxxxxxxxxxxxxx" //emoncms Account--> "Write API Key"
