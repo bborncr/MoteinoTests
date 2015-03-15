@@ -3,14 +3,10 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <utility/w5100.h> //with KiwiSinceBirth mods
-#include "apikey.h" 
-//use tabs to add apikey.h file or uncomment this line
-//#define APIKEY "xxxxxxxxxxxxxxxxx" //emoncms Account--> "Write API Key"
-
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0 };
-IPAddress server (192,168,10,176);//My Laptop
-IPAddress ip(192,168,10,178);
+IPAddress server (192,168,10,176); //my laptop running 'nc -lk 8000'
+IPAddress ip(192,168,10,178); //ip to use in case of DHCP failure
 EthernetClient client;
 
 #define NODEID        1    //unique for each node on same network
@@ -35,10 +31,9 @@ EthernetClient client;
 RFM69 radio;
 
 void setup() {
-  W5100.select(7);
+  W5100.select(7); //selects pin 7 as SS for Ethernet module (KiwiSinceBirth mod)
   Serial.begin(SERIAL_BAUD);
   delay(10);
-  Serial.println(APIKEY);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
 #ifdef IS_RFM69HW
   radio.setHighPower(); //only for RFM69HW!
@@ -66,7 +61,7 @@ void loop() {
   if (radio.receiveDone())
   {
     client.stop();
-      if (client.connect(server, 8000)) {
+      if (client.connect(server, 80)) {
 
     
     client.print("#[");
