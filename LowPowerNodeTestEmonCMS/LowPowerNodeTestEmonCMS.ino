@@ -65,20 +65,18 @@ void loop() {
     {
       radio.sendACK();
       Serial.print(" - ACK sent");
-    //  radio.sleep();
     }
     Blink(LED,3);
     Serial.println();
   }
 
     
-      int sensorReading = analogRead(A0);
+      int sensorReading = radio.readTemperature(0);
       theData.nodeId = NODEID;
       theData.uptime = millis();
       theData.temp = sensorReading;
-      //byte payloadLen = sprintf(payload, "Sensor A0: %u", sensorReading);
       
-      if (radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData)))
+      if (radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData)),2,100)
       {
         Serial.print(" ok!");
       }
@@ -86,10 +84,11 @@ void loop() {
         Serial.print(" nothing...");
       }
     Blink(LED,3);
-  
+
   Serial.flush();
   radio.sleep();
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+
 }
 
 void Blink(byte PIN, int DELAY_MS)

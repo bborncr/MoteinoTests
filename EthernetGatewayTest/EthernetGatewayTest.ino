@@ -3,9 +3,10 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <utility/w5100.h> //with KiwiSinceBirth mods
+//#include <SPIFlash.h> //get it here: https://www.github.com/lowpowerlab/spiflash
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0 };
-IPAddress server (192,168,10,176); //my laptop running 'nc -lk 8000'
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+IPAddress server (192,168,10,185); //my laptop running 'nc -lk 8000'
 IPAddress ip(192,168,10,178); //ip to use in case of DHCP failure
 EthernetClient client;
 
@@ -29,9 +30,16 @@ EthernetClient client;
 #endif
 
 RFM69 radio;
+//SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)
+
 
 void setup() {
+  
   W5100.select(7); //selects pin 7 as SS for Ethernet module (KiwiSinceBirth mod)
+
+pinMode(8, OUTPUT);
+digitalWrite(8, HIGH);
+
   Serial.begin(SERIAL_BAUD);
   delay(10);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
@@ -42,16 +50,17 @@ void setup() {
   char buff[50];
   sprintf(buff, "\nListening at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
   Serial.println(buff);
-  
+  Serial.println(F("Starting Ethernet..."));
+  delay(100);
   // start the Ethernet connection:
+  //Ethernet.begin(mac,ip);
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
-    // no point in carrying on, so do nothing forevermore:
-    // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
+  Serial.println(F("Ethernet Ready..."));
 }
 
 byte ackCount=0;
@@ -61,7 +70,7 @@ void loop() {
   if (radio.receiveDone())
   {
     client.stop();
-      if (client.connect(server, 80)) {
+      if (client.connect(server, 8000)) {
 
     
     client.print("#[");

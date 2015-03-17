@@ -23,6 +23,13 @@
 
 RFM69 radio;
 
+typedef struct {
+  int           nodeId; //store this nodeId
+  unsigned long uptime; //uptime in ms
+  float         temp;   //temperature maybe?
+} Payload;
+Payload theData;
+
 void setup() {
   Serial.begin(SERIAL_BAUD);
   delay(10);
@@ -42,14 +49,21 @@ void loop() {
 
   if (radio.receiveDone())
   {
-    Serial.print("#[");
-    Serial.print(++packetCount);
-    Serial.print(']');
     Serial.print('[');Serial.print(radio.SENDERID, DEC);Serial.print("] ");
-    for (byte i = 0; i < radio.DATALEN; i++)
-      Serial.print((char)radio.DATA[i]);
-    Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
-    
+    Serial.print(" [RX_RSSI:");Serial.print(radio.readRSSI());Serial.print("]");
+
+    if (radio.DATALEN != sizeof(Payload))
+      Serial.print("Invalid payload received, not matching Payload struct!");
+    else
+    {
+      theData = *(Payload*)radio.DATA; //assume radio.DATA actually contains our struct and not something else
+      Serial.print(" nodeId=");
+      Serial.print(theData.nodeId);
+      Serial.print(" uptime=");
+      Serial.print(theData.uptime);
+      Serial.print(" temp=");
+      Serial.print(theData.temp);
+    }
     if (radio.ACKRequested())
     {
       byte theNodeID = radio.SENDERID;

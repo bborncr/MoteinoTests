@@ -3,19 +3,11 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <utility/w5100.h> //with KiwiSinceBirth mods
-#include "apikey.h" 
-//use tabs to add apikey.h file or uncomment this line
-//#define APIKEY "xxxxxxxxxxxxxxxxx" //emoncms Account--> "Write API Key"
-
+//#include <SPIFlash.h> //get it here: https://www.github.com/lowpowerlab/spiflash
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-//IPAddress server (192,168,10,176);
-char server[] = "energia.crcibernetica.com";
-
-byte ip[] = { 10, 0, 1, 20 };    
-   
-byte gateway[] = { 10, 0, 1, 1 };    
-
+IPAddress server (192,168,10,185); //my laptop running 'nc -lk 8000'
+IPAddress ip(192,168,10,178); //ip to use in case of DHCP failure
 EthernetClient client;
 
 #define NODEID        1    //unique for each node on same network
@@ -39,21 +31,15 @@ EthernetClient client;
 
 RFM69 radio;
 
-typedef struct {
-  int           nodeId; //store this nodeId
-  unsigned long uptime; //uptime in ms
-  float         temp;   //temperature maybe?
-} Payload;
-Payload theData;
-
 void setup() {
+  
   W5100.select(7); //selects pin 7 as SS for Ethernet module (KiwiSinceBirth mod)
-  pinMode(8, OUTPUT);
-  digitalWrite(8, HIGH);
-  delay(500);
+
+pinMode(8, OUTPUT);
+digitalWrite(8, HIGH);
+
   Serial.begin(SERIAL_BAUD);
-  delay(500);
-  //Serial.println(APIKEY);
+  delay(10);
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
 #ifdef IS_RFM69HW
   radio.setHighPower(); //only for RFM69HW!
@@ -65,50 +51,33 @@ void setup() {
   Serial.println(F("Starting Ethernet..."));
   delay(100);
   // start the Ethernet connection:
+  //Ethernet.begin(mac,ip);
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
-    // no point in carrying on, so do nothing forevermore:
-    // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac, ip, dns, gateway);
+    Ethernet.begin(mac, ip);
   }
   // give the Ethernet shield a second to initialize:
-  Serial.println(F("Ethernet Ready..."));
   delay(1000);
+  Serial.println(F("Ethernet Ready..."));
 }
 
 byte ackCount=0;
+uint32_t packetCount = 0;
 void loop() {
 
   if (radio.receiveDone())
   {
-    
-    if (radio.DATALEN != sizeof(Payload))
-      Serial.print("Invalid payload received, not matching Payload struct!");
-    else
-    {
-      theData = *(Payload*)radio.DATA; //assume radio.DATA actually contains our struct and not something else
-    
     client.stop();
-      if(client.connect(server,80))
-
-{
-
-    client.print("GET /input/post.json?node=");  // make sure there is a [space] between GET and /input
-    client.print(theData.nodeId);
-    client.print("&csv=");
-    client.print(theData.uptime);
-    client.print(",");
-    client.print(theData.temp);
-    client.print(",");
-    client.print(radio.RSSI);
-    client.print("&apikey=");
-    client.print(APIKEY);         //assuming MYAPIKEY is a char or string
-    client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-    client.println(F("Host: energia.crcibernetica.com"));
-    client.print(F("User-Agent: Arduino-ethernet"));
-    client.println(F("Connection: close"));
-    client.println();
-} else {
+      if (client.connect(server, 8000)) {
+    
+    client.print("#[");
+    client.print(++packetCount);
+    client.print(']');
+    client.print('[');client.print(radio.SENDERID, DEC);client.print("] ");
+    for (byte i = 0; i < radio.DATALEN; i++)
+      client.print((char)radio.DATA[i]);
+    client.print("   [RX_RSSI:");client.print(radio.RSSI);client.print("]");client.println();
+      } else {
         Serial.println("Connection Failed");
       }
     
@@ -121,7 +90,6 @@ void loop() {
     }
     Serial.println();
     Blink(LED,3);
-  }
   }
 }
 
