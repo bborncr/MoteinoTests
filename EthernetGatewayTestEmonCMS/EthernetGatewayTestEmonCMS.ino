@@ -26,7 +26,6 @@ EthernetClient client;
 #define FREQUENCY     RF69_915MHZ
 #define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
 #define IS_RFM69HW    //uncomment only for RFM69HW! Leave out if you have RFM69W!
-#define ACK_TIME      30 // max # of ms to wait for an ack
 #define SERIAL_BAUD   9600
 
 #ifdef __AVR_ATmega1284P__
@@ -73,6 +72,7 @@ void setup() {
   }
   // give the Ethernet shield a second to initialize:
   Serial.println(F("Ethernet Ready..."));
+  Serial.println(Ethernet.localIP());
   delay(1000);
 }
 
