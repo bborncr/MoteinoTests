@@ -41,7 +41,8 @@ RFM69 radio;
 typedef struct {
   int           nodeId; //store this nodeId
   unsigned long uptime; //uptime in ms
-  float         temp;   //temperature maybe?
+  float         temp;   //temperature
+  int           moisture; //soil moisture
 } Payload;
 Payload theData;
 
@@ -101,6 +102,8 @@ void loop() {
     client.print(theData.temp);
     client.print(",");
     client.print(radio.RSSI);
+    client.print(",");
+    client.print(theData.moisture);
     client.print("&apikey=");
     client.print(APIKEY);         //assuming MYAPIKEY is a char or string
     client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP

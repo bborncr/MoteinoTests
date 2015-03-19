@@ -1,11 +1,18 @@
 #include <LowPower.h>
-
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#define ONE_WIRE_BUS 7
 // Simplified Moteino Node Test
 
 #include <RFM69.h>    //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <SPI.h>
 
-#define NODEID        8    //unique for each node on same network
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+DeviceAddress tempDeviceAddress;
+int  resolution = 9;
+
+#define NODEID        9    //unique for each node on same network
 #define NETWORKID     100  //the same on all nodes that talk to each other
 #define GATEWAYID     1
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
@@ -48,11 +55,19 @@ void setup() {
   sprintf(buff, "\nTransmitting at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
   Serial.println(buff);
   
+  pinMode(A1, OUTPUT);
+  pinMode(A1, LOW);
+  
+  sensors.begin();
+  sensors.getAddress(tempDeviceAddress, 0);
+  sensors.setResolution(tempDeviceAddress, resolution);
+  
 }
 
 long lastPeriod = 0;
 void loop() {
 
+  digitalWrite(A1, HIGH); // Turn on Soil Moisture Sensor
   //check for any received packets
   if (radio.receiveDone())
   {
@@ -70,19 +85,25 @@ void loop() {
     Serial.println();
   }
 
-    
-      int sensorReading = radio.readTemperature(0);
+
+
+sensors.requestTemperatures();
+//Serial.println(sensors.getTempCByIndex(0));  
+
+      int temperatureReading = sensors.getTempCByIndex(0);
+      int soilMoisture = analogRead(A0);
+      digitalWrite(A1, LOW); //Turn off Soil Moisture sensor
       theData.nodeId = NODEID;
       theData.uptime = millis();
-      theData.temp = sensorReading;
-      theData.moisture = 0;
+      theData.temp = temperatureReading;
+      theData.moisture = soilMoisture;
       
       if (radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData)),2,100)
       {
-        Serial.print(" ok!");
+        Serial.println(F(" ok!"));
       }
       else {
-        Serial.print(" nothing...");
+        Serial.println(F(" nothing..."));
       }
     Blink(LED,3);
 
