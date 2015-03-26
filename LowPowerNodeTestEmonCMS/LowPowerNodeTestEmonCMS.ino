@@ -1,4 +1,4 @@
-#include <LowPower.h>
+#include <LowPower.h>   //https://github.com/rocketscream/Low-Power
 
 // Simplified Moteino Node Test
 
@@ -6,7 +6,7 @@
 #include <SPI.h>
 
 #define NODEID        8    //unique for each node on same network
-#define NETWORKID     100  //the same on all nodes that talk to each other
+#define NETWORKID     200  //the same on all nodes that talk to each other
 #define GATEWAYID     1
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
 //#define FREQUENCY   RF69_433MHZ
@@ -50,7 +50,6 @@ void setup() {
   
 }
 
-long lastPeriod = 0;
 void loop() {
 
   //check for any received packets
@@ -70,7 +69,7 @@ void loop() {
     Serial.println();
   }
 
-    
+    // Send data
       int sensorReading = radio.readTemperature(0);
       theData.nodeId = NODEID;
       theData.uptime = millis();
